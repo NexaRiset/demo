@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Sistem Antrian - Scan BPJS</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary-color: #2563eb;
+        --primary-hover: #1d4ed8;
+        --success-color: #059669;
+        --danger-color: #dc2626;
+        --warning-color: #d97706;
+        --background: #f8fafc;
+        --card-bg: #ffffff;
+        --text-primary: #1e293b;
+        --text-secondary: #64748b;
+        --border-color: #e2e8f0;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: var(--background);
+        color: var(--text-primary);
+        line-height: 1.2;
+      }
+
+      .container {
+        height: 100vh;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 1rem;
+        display: grid;
+        grid-template-rows: auto 1fr;
+        gap: 1rem;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        text-align: center;
+        margin: 0;
+      }
+
+      h2 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        color: var(--text-primary);
+      }
+
+      .main-content {
+        display: grid;
+        grid-template-columns: 3fr 2fr;
+        gap: 1rem;
+        height: calc(100vh - 4rem);
+      }
+
+      .card {
+        background: var(--card-bg);
+        border-radius: 0.75rem;
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        padding: 1.25rem;
+      }
+
+      .camera-container {
+        width: 100%;
+        text-align: center;
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 0.5rem;
+      }
+
+      #camera-feed {
+        width: 100%;
+        height: 40vh;
+        border-radius: 0.5rem;
+        border: 2px solid var(--border-color);
+        margin-bottom: 0.75rem;
+        background: #000;
+        object-fit: contain;
+      }
+
+      .button {
+        background-color: var(--primary-color);
+        color: white;
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        margin: 0.25rem;
+      }
+
+      .button:hover {
+        background-color: var(--primary-hover);
+        transform: translateY(-1px);
+      }
+
+      .button:disabled {
+        background-color: var(--text-secondary);
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      #preview {
+        max-width: 100%;
+        max-height: 300px;
+        margin: 0.75rem auto;
+        display: none;
+        border-radius: 0.5rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        object-fit: contain;
+        border: 2px solid var(--border-color);
+      }
+
+      #status {
+        margin: 0.5rem 0;
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+        display: none;
+        font-weight: 500;
+        font-size: 0.875rem;
+      }
+
+      .status-processing {
+        background-color: #fef3c7;
+        color: var(--warning-color);
+      }
+
+      .status-success {
+        background-color: #dcfce7;
+        color: var(--success-color);
+      }
+
+      .status-error {
+        background-color: #fee2e2;
+        color: var(--danger-color);
+      }
+
+      #result {
+        margin-top: 1rem;
+      }
+
+      #result h2 {
+        color: var(--primary-color);
+        font-size: 1.4rem;
+        margin-bottom: 1rem;
+      }
+
+      .field-group {
+        margin-bottom: 0.75rem;
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        background: #f8fafc;
+        border: 1px solid var(--border-color);
+      }
+
+      .field-label {
+        font-weight: 600;
+        color: var(--text-secondary);
+        display: block;
+        margin-bottom: 0.35rem;
+        font-size: 1rem;
+      }
+
+      .field-value {
+        color: var(--text-primary);
+        font-size: 1.2rem;
+        font-weight: 500;
+        display: block;
+        padding: 0.25rem 0;
+      }
+
+      .right-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      #queue-section {
+        background-color: #f0f9ff;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        margin-top: 1rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      #queue-section h2 {
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+        text-align: center;
+        font-size: 1.5rem;
+      }
+
+      .poli-buttons {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        margin: 1rem 0;
+      }
+
+      .poli-button {
+        background-color: white;
+        color: var(--primary-color);
+        border: 2px solid var(--primary-color);
+        padding: 1rem;
+        border-radius: 0.75rem;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        text-align: center;
+        width: 100%;
+        margin-bottom: 0.5rem;
+      }
+
+      .poli-button:not(:disabled):hover {
+        background-color: var(--primary-color);
+        color: white;
+        transform: translateY(-2px);
+      }
+
+      .poli-button.selected {
+        background-color: var(--primary-color);
+        color: white;
+      }
+
+      .poli-button:disabled {
+        background-color: #e2e8f0;
+        color: #94a3b8;
+        border-color: #cbd5e1;
+        cursor: not-allowed;
+        opacity: 0.7;
+      }
+
+      .button-group {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1.5rem;
+      }
+
+      #get-queue {
+        background-color: var(--success-color);
+        flex: 2;
+        font-size: 1.1rem;
+        padding: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      #get-queue:not(:disabled):hover {
+        background-color: #047857;
+        transform: translateY(-2px);
+      }
+
+      #cancel-selection {
+        background-color: var(--danger-color);
+        flex: 1;
+        font-size: 1rem;
+        padding: 0.75rem;
+      }
+
+      #cancel-selection:not(:disabled):hover {
+        background-color: #b91c1c;
+        transform: translateY(-2px);
+      }
+
+      .button:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+        transform: none !important;
+      }
+
+      .queue-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin: 0.75rem 0;
+        text-align: center;
+      }
+
+      #queueResult {
+        display: none;
+        background-color: white;
+        padding: 2rem;
+        border-radius: 0.75rem;
+        text-align: center;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      }
+
+      .action-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 1.5rem;
+      }
+
+      .reset-button {
+        background-color: var(--primary-color);
+        color: white;
+        padding: 0.75rem 2rem;
+        border: none;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 500;
+        transition: all 0.2s;
+        width: 100%;
+        max-width: 200px;
+      }
+
+      .reset-button:hover {
+        background-color: var(--primary-hover);
+        transform: translateY(-1px);
+      }
+
+      .ticket-container {
+        background: white;
+        padding: 1rem;
+        border-radius: 0.75rem;
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+      }
+
+      .ticket-container h1 {
+        font-size: 2rem;
+        color: var(--primary-color);
+        margin: 0.5rem 0;
+      }
+
+      .ticket-container p {
+        margin: 0.5rem 0;
+        color: var(--text-secondary);
+        font-size: 0.875rem;
+      }
+
+      .print-button {
+        background-color: var(--primary-color);
+        color: white;
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        font-size: 0.875rem;
+        font-weight: 500;
+        margin-top: 0.75rem;
+        transition: all 0.2s ease;
+        width: 100%;
+      }
+
+      .print-button:hover {
+        background-color: var(--primary-hover);
+      }
+
+      #qrCode {
+        width: 280px;
+        height: 280px;
+        margin: 0.75rem auto;
+        display: block;
+      }
+
+      @media print {
+        body * {
+          visibility: hidden;
+        }
+        #queueResult,
+        #queueResult * {
+          visibility: visible;
+        }
+        #queueResult {
+          position: absolute;
+          left: 0;
+          top: 0;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .main-content {
+          grid-template-columns: 1fr;
+          gap: 0.75rem;
+        }
+
+        #camera-feed {
+          height: 35vh;
+        }
+
+        .container {
+          padding: 0.75rem;
+        }
+      }
+
+      .correction-form {
+        display: none;
+        margin-top: 20px;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+      }
+
+      .correction-form.show {
+        display: block;
+      }
+
+      .correction-form input {
+        width: 100%;
+        padding: 8px;
+        margin: 5px 0;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+
+      .validation-indicator {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        margin-right: 5px;
+      }
+
+      .validation-valid {
+        background-color: #4caf50;
+      }
+
+      .validation-invalid {
+        background-color: #f44336;
+      }
+
+      .confidence-meter {
+        height: 5px;
+        background-color: #ddd;
+        border-radius: 3px;
+        margin-top: 5px;
+      }
+
+      .confidence-value {
+        height: 100%;
+        background-color: #2196f3;
+        border-radius: 3px;
+        transition: width 0.3s ease;
+      }
+
+      .validation-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 4px;
+      }
+
+      .validation-indicator {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        display: inline-block;
+      }
+
+      .validation-valid {
+        background-color: var(--success-color);
+      }
+
+      .validation-invalid {
+        background-color: var(--danger-color);
+      }
+
+      .confidence-meter {
+        flex: 1;
+        height: 4px;
+        background-color: var(--border-color);
+        border-radius: 2px;
+        overflow: hidden;
+      }
+
+      .confidence-value {
+        height: 100%;
+        background-color: var(--primary-color);
+        width: 0;
+        transition: width 0.3s ease;
+      }
+
+      .verification-badge {
+        margin-top: 1rem;
+        padding: 0.5rem;
+        background-color: #dcfce7;
+        color: var(--success-color);
+        border-radius: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 500;
+      }
+
+      .verification-icon {
+        font-size: 1.2rem;
+      }
+
+      .field-value {
+        word-break: break-word;
+      }
+
+      .back-btn {
+        background-color: #64748b;
+        color: white;
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        margin-bottom: 1rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .back-btn:hover {
+        background-color: #475569;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <button onclick="window.location.href='index.html'" class="back-btn">
+        ← Kembali
+      </button>
+      <div class="main-content">
+        <div class="card">
+          <div class="camera-container">
+            <video id="camera-feed" autoplay></video>
+            <button id="start-camera" class="button">Mulai Kamera</button>
+            <button id="capture" class="button" disabled>
+              Ambil Foto BPJS
+            </button>
+            <img id="preview" alt="Preview BPJS" />
+          </div>
+
+          <div id="status"></div>
+
+          <div id="result">
+            <h2>Data BPJS</h2>
+            <div class="field-group">
+              <span class="field-label">No. Kartu BPJS</span>
+              <span id="noBPJS" class="field-value">-</span>
+              <div class="validation-status">
+                <span class="validation-indicator"></span>
+                <span class="confidence-meter">
+                  <div class="confidence-value"></div>
+                </span>
+              </div>
+            </div>
+            <div style="display: none" class="field-group">
+              <span class="field-label">NIK</span>
+              <span id="nik" class="field-value">-</span>
+              <div class="validation-status">
+                <span class="validation-indicator"></span>
+                <span class="confidence-meter">
+                  <div class="confidence-value"></div>
+                </span>
+              </div>
+            </div>
+            <div class="field-group">
+              <span class="field-label">Nama Lengkap</span>
+              <span id="nama" class="field-value">-</span>
+              <div class="validation-status">
+                <span class="validation-indicator"></span>
+                <span class="confidence-meter">
+                  <div class="confidence-value"></div>
+                </span>
+              </div>
+            </div>
+            <div style="display: none" class="field-group">
+              <span class="field-label">Faskes</span>
+              <span id="faskes" class="field-value">-</span>
+              <div class="validation-status">
+                <span class="validation-indicator"></span>
+                <span class="confidence-meter">
+                  <div class="confidence-value"></div>
+                </span>
+              </div>
+            </div>
+            <div
+              id="verification-status"
+              class="verification-badge"
+              style="display: none"
+            >
+              <span class="verification-icon">✓</span>
+              <span class="verification-text">Terverifikasi</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="right-panel">
+          <div id="queue-section" class="card">
+            <h2>Pilih Poli Tujuan</h2>
+            <div class="poli-buttons">
+              <button class="poli-button" data-poli="umum">Poli Umum</button>
+              <button class="poli-button" data-poli="gigi">Poli Gigi</button>
+              <button class="poli-button" data-poli="mata">Poli Mata</button>
+              <button class="poli-button" data-poli="anak">Poli Anak</button>
+              <button class="poli-button" data-poli="kandungan">
+                Poli Kandungan
+              </button>
+            </div>
+            <div class="button-group">
+              <button id="get-queue" class="button" disabled>
+                Ambil Nomor Antrian
+              </button>
+              <button id="cancel-selection" class="button" disabled>
+                Batal
+              </button>
+            </div>
+            <div class="queue-number" id="queue-number"></div>
+          </div>
+
+          <div id="queueResult">
+            <h2>Nomor Antrian Anda</h2>
+            <div class="queue-info">
+              <h1 id="queueNumber" class="queue-number"></h1>
+              <p id="patientName" class="patient-name"></p>
+              <p id="poliInfo" class="poli-info"></p>
+              <p id="visitDate" class="visit-date"></p>
+              <img id="qrCode" class="qr-code" alt="QR Code" />
+            </div>
+            <div class="action-buttons">
+              <button id="resetButton" class="reset-button">Selesai</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="correction-form" id="correctionForm">
+      <h3>Verifikasi Data BPJS</h3>
+      <div class="form-group">
+        <label>
+          <span class="validation-indicator" id="bpjsValidation"></span>
+          No. Kartu BPJS:
+        </label>
+        <input type="text" id="bpjsInput" maxlength="13" />
+        <div class="confidence-meter">
+          <div class="confidence-value" id="bpjsConfidence"></div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>
+          <span class="validation-indicator" id="namaValidation"></span>
+          Nama:
+        </label>
+        <input type="text" id="namaInput" />
+        <div class="confidence-meter">
+          <div class="confidence-value" id="namaConfidence"></div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>
+          <span class="validation-indicator" id="faskesValidation"></span>
+          Faskes:
+        </label>
+        <input type="text" id="faskesInput" />
+        <div class="confidence-meter">
+          <div class="confidence-value" id="faskesConfidence"></div>
+        </div>
+      </div>
+      <button onclick="submitCorrection()">Konfirmasi Data</button>
+    </div>
+
+    <script src="./bpjs.js"></script>
+  </body>
+</html>
