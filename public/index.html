@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sistem Antrian Rumah Sakit</title>
+    <link rel="stylesheet" href="/assets/nexaui.min.css" />
+    <script src="https://code.responsivevoice.org/responsivevoice.js?key=16D1IGr5"></script>
+    <style>
+      :root {
+        --primary-color: #2563eb;
+        --secondary-color: #3b82f6;
+        --success-color: #22c55e;
+        --purple-color: #7c3aed;
+        --card-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1);
+        --transition: all 0.3s ease;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+      }
+
+      body {
+        background-image: linear-gradient(
+            rgba(255, 255, 255, 0.9),
+            rgba(255, 255, 255, 0.9)
+          ),
+          url("/assets/brand/bg4.jpg");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        min-height: 100vh;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .container {
+        max-width: 100%;
+        height: 100vh;
+        margin: 0;
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .welcome-section {
+        padding: 0.5rem 0;
+        height: 200px;
+      }
+
+      h1 {
+        font-size: 2.2rem;
+        font-weight: 700;
+        background: linear-gradient(
+          45deg,
+          var(--primary-color),
+          var(--purple-color)
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 0.3rem;
+      }
+
+      h3 {
+        font-size: 1.3rem;
+        color: #4b5563;
+        font-weight: 500;
+        margin: 0.3rem 0;
+      }
+
+      .banner {
+        background: url("/assets/brand/banner2.gif");
+        border-radius: 15px;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        color: #6b7280;
+        box-shadow: var(--card-shadow);
+        height: 150px;
+      }
+
+      .method-selection {
+        display: flex;
+        padding: 0.5rem 0;
+        height: 45vh;
+        position: relative;
+        width: 100%;
+        overflow: hidden;
+      }
+
+      .slider-container {
+        display: flex;
+        gap: 1.5rem;
+        transition: transform 0.3s ease;
+        width: 200%;
+        touch-action: pan-y pinch-zoom;
+      }
+      .slider {
+        display: flex;
+        transition: transform 0.5s ease-in-out;
+        gap: 20px;
+        padding: 0 10px;
+      }
+
+      .slide {
+        flex: 0 0 100%;
+        display: flex;
+        gap: 20px;
+        min-width: calc((100% - 40px) / 3);
+        justify-content: space-between;
+        padding: 0 15px;
+      }
+
+      .card {
+        flex: 1;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 15px;
+        padding: 1rem;
+        transition: var(--transition);
+        cursor: pointer;
+        box-shadow: var(--card-shadow);
+        border: 1px solid rgba(229, 231, 235, 0.5);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.15);
+      }
+
+      .card-preview {
+        flex: 1;
+        border-radius: 12px;
+        padding: 1rem;
+        position: relative;
+        color: #fff;
+        margin-bottom: 0.5rem;
+        backdrop-filter: blur(10px);
+      }
+
+      .ktp-card {
+        background: linear-gradient(135deg, #1e40af, var(--primary-color));
+      }
+
+      .bpjs-card {
+        background: linear-gradient(135deg, #15803d, var(--success-color));
+      }
+
+      .simrsbp-card {
+        background: linear-gradient(135deg, #6d28d9, var(--purple-color));
+      }
+
+      .card-logo {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        font-weight: 600;
+        font-size: 1.2rem;
+        padding: 0.5rem 1rem;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+      }
+
+      .chip {
+        width: 45px;
+        height: 35px;
+        background: linear-gradient(135deg, #fbbf24, #f59e0b);
+        border-radius: 8px;
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+      }
+
+      .card-number {
+        font-size: 1.4rem;
+        letter-spacing: 2px;
+        margin: 2.5rem 0 1rem;
+        font-weight: 500;
+      }
+
+      .card-holder {
+        font-size: 1rem;
+        opacity: 0.9;
+      }
+
+      .card-details {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 2rem;
+        font-size: 0.9rem;
+        opacity: 0.9;
+      }
+
+      .card h4 {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+        color: #1a1a1a;
+      }
+
+      .card p {
+        color: #6b7280;
+        font-size: 1rem;
+      }
+
+      .footer {
+        margin-top: auto;
+        padding-top: 0.1rem;
+        border-top: 1px solid #e5e7eb;
+        height: 20vh;
+      }
+
+      .footer h4 {
+        color: #4b5563;
+        margin-bottom: 0.5rem;
+        font-size: 1.1rem;
+      }
+
+      .logo-container {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+      }
+
+      .logo-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.5rem;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        transition: var(--transition);
+      }
+
+      .logo-item:hover {
+        transform: translateY(-5px);
+      }
+
+      .org-logo {
+        width: 35px;
+        height: 35px;
+        object-fit: contain;
+        border-radius: 8px;
+      }
+
+      .logo-item span {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #374151;
+      }
+
+      .dots-container {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 1rem;
+      }
+
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #cbd5e1;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .dot.active {
+        background: var(--primary-color);
+        transform: scale(1.2);
+      }
+
+      /* Gradient indicators for scroll */
+      .method-selection::before,
+      .method-selection::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        height: 100%;
+        width: 60px;
+        pointer-events: none;
+        z-index: 1;
+      }
+
+      .method-selection::before {
+        left: 0;
+        background: linear-gradient(
+          to right,
+          rgba(255, 255, 255, 0.9),
+          transparent
+        );
+      }
+
+      .method-selection::after {
+        right: 0;
+        background: linear-gradient(
+          to left,
+          rgba(255, 255, 255, 0.9),
+          transparent
+        );
+      }
+
+      .nav-button {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: white;
+        border: none;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: #4b5563;
+        transition: all 0.3s ease;
+      }
+
+      .nav-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background-color: rgba(0, 0, 0, 0.5);
+        color: white;
+        border: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 18px;
+        transition: background-color 0.3s;
+        z-index: 10;
+      }
+
+      .nav-btn:hover {
+        background-color: rgba(0, 0, 0, 0.8);
+      }
+
+      .prev {
+        left: 10px;
+      }
+
+      .next {
+        right: 10px;
+      }
+      @media (max-width: 1366px) {
+        .container {
+          padding: 1rem;
+        }
+
+        .card {
+          flex: 0 0 300px;
+          min-width: 300px;
+        }
+
+        h1 {
+          font-size: 2.5rem;
+        }
+
+        h3 {
+          font-size: 1.3rem;
+        }
+
+        .card-preview {
+          padding: 1rem;
+        }
+
+        .card h4 {
+          font-size: 1.2rem;
+        }
+
+        .card p {
+          font-size: 0.9rem;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .card {
+          flex: 0 0 280px;
+          min-width: 280px;
+        }
+
+        .method-selection::before,
+        .method-selection::after {
+          width: 40px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="welcome-section">
+        <div class="nx-row">
+          <div class="nx-col-5">
+            <h1>Selamat Datang</h1>
+            <h4 style="font-size: 18px">
+              di Rumah Sakit Umum Daerah Kabupaten Pohuwato
+            </h4>
+          </div>
+          <div class="nx-col-7">
+            <div class="banner"></div>
+          </div>
+        </div>
+      </div>
+
+      <h3>Silahkan Pilih Metode Pendaftaran</h3>
+
+      <div class="method-selection">
+        <!--         <button class="nav-button prev" onclick="navigate(-1)">❮</button>
+        <button class="nav-button next" onclick="navigate(1)">❯</button> -->
+        <div class="slider-container">
+          <div class="slider" id="slider">
+            <div class="slide">
+              <div class="card">
+                <div class="card-preview ktp-card">
+                  <div class="card-logo">KTP</div>
+                  <div class="chip"></div>
+                  <div class="card-number">3271 XXXX XXXX XX01</div>
+                  <div class="card-holder">NAMA LENGKAP</div>
+                  <div class="card-details">
+                    <span>NIK: 3271XXXXXXXXXX</span>
+                    <span>KOTA MARISA</span>
+                  </div>
+                </div>
+                <h4 onclick="selectMethod('ktp')">Menggunakan KTP</h4>
+                <p>Scan KTP Anda untuk mendaftar antrian</p>
+              </div>
+              <div class="card">
+                <div class="card-preview bpjs-card">
+                  <div class="card-logo">BPJS</div>
+                  <div class="chip"></div>
+                  <div class="card-number">0001 XXXX XXXX XX02</div>
+                  <div class="card-holder">NAMA LENGKAP</div>
+                  <div class="card-details">
+                    <span>JKN-KIS</span>
+                    <span>FASKES TK I</span>
+                  </div>
+                </div>
+                <h4 onclick="selectMethod('bpjs')">Menggunakan BPJS</h4>
+                <p>Scan kartu BPJS Anda untuk mendaftar antrian</p>
+              </div>
+              <div class="card">
+                <div class="card-preview simrsbp-card">
+                  <div class="card-logo">QR CODE</div>
+                  <div class="chip"></div>
+                  <div class="card-number">0001 XXXX XXXX XX03</div>
+                  <div class="card-holder">NAMA LENGKAP</div>
+                  <div class="card-details">
+                    <span>KTP-BPJS</span>
+                    <span>EXPAIR</span>
+                  </div>
+                </div>
+                <h4 onclick="selectMethod('mobile')">
+                  Menggunakan SIMRSBP Mobile
+                </h4>
+                <p>Scan kartu SIMRSBP Anda untuk mendaftar antrian</p>
+              </div>
+            </div>
+            <div class="slide">
+              <!-- BATAS 1-->
+              <div class="card">
+                <div class="card-preview ktp-card">
+                  <div class="card-logo">KTP</div>
+                  <div class="chip"></div>
+                  <div class="card-number">3271 XXXX XXXX XX01</div>
+                  <div class="card-holder">NAMA LENGKAP</div>
+                  <div class="card-details">
+                    <span>NIK: 3271XXXXXXXXXX</span>
+                    <span>KOTA MARISA</span>
+                  </div>
+                </div>
+                <h4 onclick="selectMethod('ktp')">Menggunakan KTP</h4>
+                <p>Scan KTP Anda untuk mendaftar antrian</p>
+              </div>
+              <div class="card">
+                <div class="card-preview bpjs-card">
+                  <div class="card-logo">BPJS</div>
+                  <div class="chip"></div>
+                  <div class="card-number">0001 XXXX XXXX XX02</div>
+                  <div class="card-holder">NAMA LENGKAP</div>
+                  <div class="card-details">
+                    <span>JKN-KIS</span>
+                    <span>FASKES TK I</span>
+                  </div>
+                </div>
+                <h4 onclick="selectMethod('bpjs')">Menggunakan BPJS</h4>
+                <p>Scan kartu BPJS Anda untuk mendaftar antrian</p>
+              </div>
+              <div class="card">
+                <div class="card-preview simrsbp-card">
+                  <div class="card-logo">QR CODE</div>
+                  <div class="chip"></div>
+                  <div class="card-number">0001 XXXX XXXX XX03</div>
+                  <div class="card-holder">NAMA LENGKAP</div>
+                  <div class="card-details">
+                    <span>KTP-BPJS</span>
+                    <span>EXPAIR</span>
+                  </div>
+                </div>
+                <h4 onclick="selectMethod('mobile')">
+                  Menggunakan SIMRSBP Mobile
+                </h4>
+                <p>Scan kartu SIMRSBP Anda untuk mendaftar antrian</p>
+              </div>
+
+              <!-- BATAS 1-->
+            </div>
+          </div>
+          <button class="nav-btn prev">&#10094;</button>
+          <button class="nav-btn next">&#10095;</button>
+        </div>
+
+        <div class="dots-container" id="dots-container"></div>
+      </div>
+
+      <div class="footer">
+        <h4>Diselenggarakan Oleh:</h4>
+        <div class="logo-container">
+          <div class="logo-item">
+            <img
+              src="/assets/brand/pmda.jpg"
+              alt="PMDA Pohuwato Logo"
+              class="org-logo"
+            />
+            <span>PEMDA Pohuwato</span>
+          </div>
+          <div class="logo-item">
+            <img
+              src="/assets/brand/rsud.png"
+              alt="RSBP Logo"
+              class="org-logo"
+            />
+            <span>RSBP</span>
+          </div>
+          <div class="logo-item">
+            <img
+              src="/assets/brand/diskominfo.png"
+              alt="DISkominfo Logo"
+              class="org-logo"
+            />
+            <span>DISkominfo</span>
+          </div>
+          <div class="logo-item">
+            <img
+              src="/assets/brand/posdip.png"
+              alt="POSDIP Logo"
+              class="org-logo"
+            />
+            <span>Posdip</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function selectMethod(method) {
+        if (method === "ktp") {
+          window.location.href = "ktp.html";
+        } else if (method === "mobile") {
+          window.location.href = "mobile.html";
+        } else if (method === "bpjs") {
+          window.location.href = "bpjs.html";
+        } else if (method === "simrsbp") {
+          window.location.href = "mobile.html";
+        }
+      }
+
+      // const slider = document.querySelector(".slider-container");
+      // let currentPage = 0;
+      // const totalPages = 2;
+
+      // function navigate(direction) {
+      //   currentPage = Math.max(
+      //     0,
+      //     Math.min(currentPage + direction, totalPages - 1)
+      //   );
+      //   slider.style.transform = `translateX(-${currentPage * 100}%)`;
+      // }
+
+      const slider = document.querySelector(".slider");
+      const prevBtn = document.querySelector(".nav-btn.prev");
+      const nextBtn = document.querySelector(".nav-btn.next");
+      const slides = document.querySelectorAll(".slide");
+
+      let currentPosition = 0;
+      const totalSlides = slides.length;
+      let isDragging = false;
+      let startPos = 0;
+      let currentTranslate = 0;
+      let lastTranslate = 0;
+      let animationID = null;
+      let lastX = 0;
+      let moved = false;
+
+      function updateSliderPosition(position) {
+        currentTranslate = position * -100;
+        slider.style.transform = `translateX(${currentTranslate}%)`;
+      }
+
+      function navigate(direction) {
+        currentPosition = Math.max(
+          0,
+          Math.min(currentPosition + direction, totalSlides - 1)
+        );
+        updateSliderPosition(currentPosition);
+      }
+
+      function setSliderPosition(position) {
+        slider.style.transform = `translateX(${position}%)`;
+      }
+
+      function animation() {
+        setSliderPosition(currentTranslate);
+        if (isDragging) requestAnimationFrame(animation);
+      }
+
+      function dragStart(e) {
+        e.preventDefault();
+        isDragging = true;
+        moved = false;
+
+        startPos = e.type.includes("mouse") ? e.pageX : e.touches[0].clientX;
+
+        lastX = startPos;
+
+        slider.style.cursor = "grabbing";
+        slider.style.transition = "none";
+
+        cancelAnimationFrame(animationID);
+        animationID = requestAnimationFrame(animation);
+      }
+
+      function drag(e) {
+        if (!isDragging) return;
+
+        const currentX = e.type.includes("mouse")
+          ? e.pageX
+          : e.touches[0].clientX;
+
+        const walk = currentX - startPos;
+        const sliderWidth = slider.offsetWidth;
+
+        // Menghitung persentase perpindahan relatif terhadap lebar slider
+        const movePercent = (walk / sliderWidth) * 100;
+
+        // Membatasi pergerakan
+        currentTranslate = Math.max(
+          -100 * (totalSlides - 1),
+          Math.min(0, lastTranslate + movePercent)
+        );
+
+        moved = true;
+        lastX = currentX;
+      }
+
+      function dragEnd() {
+        isDragging = false;
+        cancelAnimationFrame(animationID);
+
+        slider.style.cursor = "grab";
+        slider.style.transition = "transform 0.3s ease-out";
+
+        if (!moved) return;
+
+        const movedPercent = currentTranslate - lastTranslate;
+        const threshold = 15; // Persentase threshold untuk swipe
+
+        if (Math.abs(movedPercent) > threshold) {
+          if (movedPercent > 0) {
+            currentPosition = Math.max(0, currentPosition - 1);
+          } else {
+            currentPosition = Math.min(totalSlides - 1, currentPosition + 1);
+          }
+        }
+
+        updateSliderPosition(currentPosition);
+        lastTranslate = currentPosition * -100;
+      }
+
+      // Touch events
+      slider.addEventListener("touchstart", dragStart, { passive: false });
+      slider.addEventListener("touchmove", drag, { passive: false });
+      slider.addEventListener("touchend", dragEnd);
+
+      // Mouse events
+      slider.addEventListener("mousedown", dragStart);
+      slider.addEventListener("mousemove", drag);
+      slider.addEventListener("mouseup", dragEnd);
+      slider.addEventListener("mouseleave", dragEnd);
+
+      // Event listeners untuk tombol navigasi
+      prevBtn.addEventListener("click", () => navigate(-1));
+      nextBtn.addEventListener("click", () => navigate(1));
+
+      // Inisialisasi posisi awal
+      updateSliderPosition(currentPosition);
+      slider.style.cursor = "grab";
+
+      window.onload = function () {
+        const welcomeMessage =
+          "Selamat Datang di Rumah Sakit Umum Daerah Kabupaten Pohuwato. Silahkan Pilih Metode Pendaftaran";
+        responsiveVoice.speak(welcomeMessage, "Indonesian Female", {
+          pitch: 1,
+          rate: 1.0,
+          volume: 1,
+        });
+      };
+    </script>
+  </body>
+</html>
