@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Sistem Antrian - Scan BPJS</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/assets/nexaui.min.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://code.responsivevoice.org/responsivevoice.js?key=16D1IGr5"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/annyang/2.6.1/annyang.min.js"></script>
+    <style>
+      body {
+        background-image: linear-gradient(
+            rgb(255 255 255 / 10%),
+            rgba(255, 255, 255, 0.9)
+          ),
+          url(/assets/brand/bg4.jpg), url("/assets/brand/bg4.jpg");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        height: 100vh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .nx-row {
+        padding: 10px;
+      }
+
+      .camera-container {
+        width: 100%;
+        text-align: center;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        background: rgba(255, 255, 255, 0.25);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        padding: 0.8rem;
+        border-radius: 0.5rem;
+      }
+
+      #camera-feed {
+        width: 100%;
+        height: 40vh;
+        border-radius: 0.5rem;
+        border: 2px solid var(--border-color);
+        margin-bottom: 0.75rem;
+        background: #000;
+        object-fit: contain;
+      }
+
+      #preview {
+        max-width: 100%;
+        max-height: 300px;
+        margin: 0.75rem auto;
+        display: none;
+        background-color: #000;
+        border-radius: 0.5rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        object-fit: contain;
+        border: 2px solid var(--border-color);
+      }
+
+      .nx-button-group {
+        display: flex;
+        gap: 0;
+        justify-content: stretch;
+        margin-top: 0.1rem;
+        width: 100%;
+      }
+
+      .nx-button-group .button {
+        background: #00b294;
+        color: white;
+        border: 1px solid #00b294;
+        padding: 0.75rem 1rem;
+        transition: all 0.3s ease;
+        flex: 1;
+        font-weight: 500;
+        font-size: 1rem;
+      }
+
+      .nx-button-group .button:first-child {
+        border-top-left-radius: 0.5rem;
+        border-bottom-left-radius: 0.5rem;
+        border-right: none;
+      }
+
+      .nx-button-group .button:last-child {
+        border-top-right-radius: 0.5rem;
+        border-bottom-right-radius: 0.5rem;
+        border-left: none;
+      }
+
+      .nx-button-group .button:hover {
+        background: #00b294;
+      }
+
+      .nx-button-group .button:disabled {
+        background: #94a3b8;
+        border-color: #64748b;
+        cursor: not-allowed;
+      }
+
+      .poli-buttons {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.75rem;
+        margin: 0.75rem 0;
+        padding: 0.5rem;
+      }
+
+      .poli-button {
+        background-color: #ffffff;
+        color: #1e293b;
+        border: 1px solid #e2e8f0;
+        padding: 0.75rem;
+        border-radius: 0.75rem;
+        cursor: pointer;
+        font-size: 0.8rem;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        text-align: left;
+        width: 100%;
+        margin-bottom: 0.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      }
+
+      .material-icons {
+        font-size: 1.25rem;
+        color: #64748b;
+      }
+
+      .poli-button:not(:disabled):hover {
+        background-color: #f8fafc;
+        border-color: #cbd5e1;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      }
+
+      .poli-button.selected {
+        background-color: #475569;
+        border-color: #475569;
+        color: #ffffff;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      .poli-button.selected:hover {
+        background-color: #475569;
+        border-color: #475569;
+        color: #ffffff;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      .poli-button.selected .material-icons {
+        color: #ffffff;
+      }
+
+      .poli-button:disabled {
+        background-color: #e2e8f0;
+        color: #94a3b8;
+        border-color: #cbd5e1;
+        cursor: not-allowed;
+        opacity: 0.7;
+      }
+
+      #queue-section {
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        background: rgba(255, 255, 255, 0.25);
+        border-radius: 1rem;
+        padding: 0.8rem;
+      }
+
+      #queue-section h2 {
+        color: #1e293b;
+        font-size: 1.25rem;
+        margin-bottom: 1rem;
+      }
+
+      .button-group {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+      }
+
+      .button-group .button {
+        background: #ffffff;
+        color: #1e293b;
+        border: 1px solid #e2e8f0;
+        padding: 0.5rem 1rem;
+        border-radius: 0.75rem;
+        font-weight: 600;
+        font-size: 0.875rem;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+      }
+
+      .button-group .button:first-child {
+        background-color: #00b294;
+        color: white;
+        border: none;
+      }
+
+      .button-group .button:last-child {
+        background-color: #ffffff;
+        color: #64748b;
+        border: 1px solid #e2e8f0;
+      }
+
+      .button-group .button:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      }
+
+      .button-group .button:first-child:hover:not(:disabled) {
+        background-color: #009882;
+      }
+
+      .button-group .button:last-child:hover:not(:disabled) {
+        background-color: #f8fafc;
+        border-color: #cbd5e1;
+      }
+
+      .button-group .button:disabled {
+        background-color: #e2e8f0;
+        color: #94a3b8;
+        border-color: #cbd5e1;
+        cursor: not-allowed;
+        opacity: 0.7;
+      }
+
+      .button.blog {
+        display: block;
+        width: 100%;
+        margin-top: 0.5rem;
+        padding: 0.5rem 1rem;
+        background-color: #475569;
+        color: white;
+        border: none;
+        border-radius: 0.75rem;
+        font-weight: 600;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: center;
+      }
+
+      .button.blog:hover {
+        background-color: #334155;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      .button.blog:active {
+        transform: translateY(0);
+        box-shadow: none;
+      }
+
+      #result {
+        border-radius: 0.75rem;
+        padding: 0.75rem;
+        margin-top: 0.75rem;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        background: rgba(255, 255, 255, 0.25);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+      }
+
+      #result h2 {
+        color: #1e293b;
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #e2e8f0;
+      }
+
+      .field-group {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #f1f5f9;
+      }
+
+      .field-group:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+      }
+
+      .field-label {
+        color: #64748b;
+        font-size: 0.75rem;
+        font-weight: 500;
+      }
+
+      .field-value {
+        color: #0f172a;
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.25rem 0.75rem;
+        background: #f8fafc;
+        border-radius: 0.375rem;
+        min-width: 120px;
+        text-align: center;
+      }
+
+      .queue-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin: 0.75rem 0;
+        text-align: center;
+      }
+
+      .ticket-container {
+        text-align: center;
+        padding: 1rem;
+        border-radius: 0.75rem;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        background: rgba(255, 255, 255, 0.25);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+      }
+
+      .ticket-container h1 {
+        font-size: 2rem;
+        color: var(--primary-color);
+        margin: 0.5rem 0;
+      }
+
+      .ticket-container p {
+        margin: 0.5rem 0;
+        color: var(--text-secondary);
+        font-size: 0.875rem;
+      }
+
+      #queueResult {
+        display: none;
+      }
+
+      #qrCode {
+        width: 280px;
+        height: 280px;
+        margin: 0.75rem auto;
+        display: block;
+      }
+
+      @media print {
+        body * {
+          visibility: hidden;
+        }
+        #queueResult,
+        #queueResult * {
+          visibility: visible;
+        }
+        #queueResult {
+          position: absolute;
+          left: 0;
+          top: 0;
+        }
+      }
+
+      .banner {
+        background: url("/assets/brand/banner2.gif");
+        background-size: contain;
+        background-position: center;
+        background-repeat: no-repeat;
+        width: 100%;
+        border-radius: 20px;
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: #6b7280;
+        box-shadow: var(--card-shadow);
+        height: 140px;
+      }
+
+      .validation-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 4px;
+      }
+
+      .validation-indicator {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        display: inline-block;
+      }
+
+      .validation-valid {
+        background-color: var(--success-color);
+      }
+
+      .validation-invalid {
+        background-color: var(--danger-color);
+      }
+
+      .confidence-meter {
+        flex: 1;
+        height: 4px;
+        background-color: var(--border-color);
+        border-radius: 2px;
+        overflow: hidden;
+      }
+
+      .confidence-value {
+        height: 100%;
+        background-color: var(--primary-color);
+        width: 0;
+        transition: width 0.3s ease;
+      }
+
+      /* Styles for Diagnosa Form */
+      #diagnosa-section {
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        background: rgba(255, 255, 255, 0.25);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin-bottom: 0.5rem;
+      }
+
+      #diagnosa-section h3 {
+        color: #1e293b;
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #e2e8f0;
+      }
+
+      .form-group {
+        margin-bottom: 0.5rem;
+      }
+
+      .form-group label {
+        display: block;
+        color: #475569;
+        font-size: 0.75rem;
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+      }
+
+      .form-control {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.5rem;
+        background: rgba(255, 255, 255, 0.9);
+        font-size: 0.875rem;
+        transition: all 0.2s ease;
+      }
+
+      .form-control:focus {
+        outline: none;
+        border-color: #00b294;
+        box-shadow: 0 0 0 3px rgba(0, 178, 148, 0.1);
+      }
+
+      .gejala-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+        background: rgba(255, 255, 255, 0.9);
+        padding: 1rem;
+        border-radius: 0.5rem;
+        border: 1px solid #e2e8f0;
+      }
+
+      .gejala-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+        color: #475569;
+        cursor: pointer;
+      }
+
+      .gejala-item input[type="checkbox"] {
+        width: 1rem;
+        height: 1rem;
+        border: 2px solid #00b294;
+        border-radius: 0.25rem;
+        cursor: pointer;
+      }
+
+      .gejala-item:hover {
+        color: #00b294;
+      }
+
+      .input-with-mic {
+        position: relative;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+
+      .mic-button {
+        background: #00b294;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .mic-button:hover {
+        background: #009882;
+        transform: translateY(-2px);
+      }
+
+      .mic-button.listening {
+        background: #dc2626;
+        animation: pulse 1.5s infinite;
+      }
+
+      .speech-status {
+        font-size: 0.875rem;
+        color: #475569;
+        margin-top: 0.5rem;
+        min-height: 20px;
+      }
+
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+          box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4);
+        }
+        70% {
+          transform: scale(1.05);
+          box-shadow: 0 0 0 10px rgba(220, 38, 38, 0);
+        }
+        100% {
+          transform: scale(1);
+          box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="nx-row">
+      <div class="nx-col-6">
+        <h1>SIMRSBP-Scan BPJS</h1>
+        <h4 style="font-size: 18px">
+          Silahkan Masukan BPJS dan tekan tombol Buka Kamera
+        </h4>
+      </div>
+      <div class="nx-col-6">
+        <div class="banner"></div>
+      </div>
+      <div class="nx-col-6">
+        <div class="camera-container">
+          <video id="camera-feed" autoplay></video>
+          <img id="preview" alt="Preview BPJS" />
+          <div class="nx-button-group">
+            <button id="start-camera" class="button">Buka Kamera</button>
+            <button id="capture" class="button" disabled>Scan BPJS</button>
+          </div>
+        </div>
+
+        <div id="status"></div>
+
+        <div id="result">
+          <h2>Data BPJS</h2>
+          <div class="field-group">
+            <span class="field-label">No. Kartu BPJS</span>
+            <span id="noBPJS" class="field-value">-</span>
+            <div class="validation-status">
+              <span class="validation-indicator"></span>
+              <span class="confidence-meter">
+                <div class="confidence-value"></div>
+              </span>
+            </div>
+          </div>
+          <div style="display: none" class="field-group">
+            <span class="field-label">NIK</span>
+            <span id="nik" class="field-value">-</span>
+            <div class="validation-status">
+              <span class="validation-indicator"></span>
+              <span class="confidence-meter">
+                <div class="confidence-value"></div>
+              </span>
+            </div>
+          </div>
+          <div class="field-group">
+            <span class="field-label">Nama Lengkap</span>
+            <span id="nama" class="field-value">-</span>
+            <div class="validation-status">
+              <span class="validation-indicator"></span>
+              <span class="confidence-meter">
+                <div class="confidence-value"></div>
+              </span>
+            </div>
+          </div>
+          <div style="display: none" class="field-group">
+            <span class="field-label">Faskes</span>
+            <span id="faskes" class="field-value">-</span>
+            <div class="validation-status">
+              <span class="validation-indicator"></span>
+              <span class="confidence-meter">
+                <div class="confidence-value"></div>
+              </span>
+            </div>
+          </div>
+          <div
+            id="verification-status"
+            class="verification-badge"
+            style="display: none"
+          >
+            <span class="verification-icon">✓</span>
+            <span class="verification-text">Terverifikasi</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="nx-col-6">
+        <div id="queue-section">
+          <div class="poli-buttons">
+            <button class="poli-button" data-poli="penyakit-dalam">
+              <span class="material-icons">medication</span>
+              POLI PENYAKIT DALAM
+            </button>
+            <button class="poli-button" data-poli="bedah">
+              <span class="material-icons">medical_services</span>
+              POLI BEDAH
+            </button>
+            <button class="poli-button" data-poli="saraf">
+              <span class="material-icons">psychology</span>
+              POLI SARAF
+            </button>
+            <button class="poli-button" data-poli="gigi">
+              <span class="material-icons">cleaning_services</span>
+              POLI GIGI
+            </button>
+            <button class="poli-button" data-poli="kulit-kelamin">
+              <span class="material-icons">face</span>
+              POLI KULIT DAN KELAMIN
+            </button>
+            <button class="poli-button" data-poli="anak">
+              <span class="material-icons">child_care</span>
+              POLI ANAK
+            </button>
+            <button class="poli-button" data-poli="obgyn">
+              <span class="material-icons">pregnant_woman</span>
+              POLI OBGYN
+            </button>
+            <button class="poli-button" data-poli="paru">
+              <span class="material-icons">air</span>
+              POLI PARU
+            </button>
+            <button class="poli-button" data-poli="jiwa">
+              <span class="material-icons">sentiment_satisfied_alt</span>
+              POLI JIWA
+            </button>
+            <button class="poli-button" data-poli="rehab-medik">
+              <span class="material-icons">accessibility_new</span>
+              POLI REHAB MEDIK
+            </button>
+            <button class="poli-button" data-poli="jantung">
+              <span class="material-icons">favorite</span>
+              POLI JANTUNG
+            </button>
+            <button class="poli-button" data-poli="tht">
+              <span class="material-icons">hearing</span>
+              POLI THT
+            </button>
+          </div>
+
+          <div id="diagnosa-section" class="card" style="margin: 1rem 0">
+            <h3>Keluhan</h3>
+            <div class="form-group">
+              <label for="keluhan">Keluhan Utama:</label>
+              <textarea
+                id="keluhan"
+                class="form-control"
+                rows="3"
+                placeholder="Masukkan keluhan utama yang dirasakan..."
+              ></textarea>
+            </div>
+          </div>
+
+          <div class="button-group">
+            <button id="get-queue" class="button" disabled>
+              <span class="material-icons">confirmation_number</span>
+              Ambil Nomor Antrian
+            </button>
+            <button id="cancel-selection" class="button" disabled>
+              <span class="material-icons">close</span>
+              Batal
+            </button>
+          </div>
+          <button
+            class="button blog"
+            onclick="window.location.href='index.html'"
+          >
+            Kembali Keberanda
+          </button>
+        </div>
+
+        <div id="queueResult">
+          <div class="ticket-container">
+            <h2>Nomor Antrian Anda</h2>
+            <h1 id="queueNumber"></h1>
+            <p id="patientName"></p>
+            <p id="poliInfo"></p>
+            <p id="visitDate"></p>
+            <img id="qrCode" alt="QR Code" />
+            <button
+              onclick="window.location.href='index.html'"
+              class="button blog"
+            >
+              Selesai
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./bpjs.js"></script>
+  </body>
+</html>
