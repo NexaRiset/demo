@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https: http: ws: wss: blob: data:"
+    />
+    <title>Voice Recognition</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+        background-color: #f0f0f0;
+      }
+      #recordButton {
+        padding: 15px 30px;
+        font-size: 18px;
+        border: none;
+        border-radius: 25px;
+        background-color: #4caf50;
+        color: white;
+        cursor: pointer;
+        margin: 20px;
+        transition: background-color 0.3s;
+      }
+      #recordButton.recording {
+        background-color: #f44336;
+      }
+      #recordButton:disabled {
+        background-color: #cccccc;
+        cursor: not-allowed;
+      }
+      #output {
+        margin: 20px;
+        padding: 20px;
+        border-radius: 10px;
+        background-color: white;
+        min-width: 300px;
+        min-height: 100px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+      #status {
+        color: #666;
+        margin: 10px;
+      }
+      .network-status {
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 14px;
+        margin: 10px;
+      }
+      .online {
+        background-color: #4caf50;
+        color: white;
+      }
+      .offline {
+        background-color: #f44336;
+        color: white;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="networkStatus" class="network-status">Initializing...</div>
+    <button id="recordButton" disabled>Mulai Rekam</button>
+    <div id="status">Menunggu...</div>
+    <div id="output"></div>
+
+    <script>
+      const { ipcRenderer } = require("electron");
+      console.log("[App] Renderer process started");
+
+      const recordButton = document.getElementById("recordButton");
+      const output = document.getElementById("output");
+      const status = document.getElementById("status");
+      const networkStatus = document.getElementById("networkStatus");
+
+      let recognition = null;
+      let isRecording = false;
+
+      function initializeSpeechRecognition() {
+        try {
+          const SpeechRecognition =
+            window.SpeechRecognition || window.webkitSpeechRecognition;
+          recognition = new SpeechRecognition();
+          recognition.lang = "id-ID";
+          recognition.continuous = false;
+          recognition.interimResults = false;
+
+          recognition.onresult = (event) => {
+            const text = event.results[0][0].transcript;
+            console.log("Recognized text:", text);
+            output.textContent = text;
+            updateStatus("Teks berhasil dideteksi ✓");
+          };
+
+          recognition.onerror = (event) => {
+            console.error("Speech recognition error:", event.error);
+            updateStatus("Error: " + event.error, true);
+            stopRecording();
+          };
+
+          recognition.onend = () => {
+            console.log("Speech recognition ended");
+            stopRecording();
+          };
+
+          recordButton.disabled = false;
+          networkStatus.textContent = "Ready";
+          networkStatus.className = "network-status online";
+          updateStatus("Sistem siap digunakan");
+        } catch (error) {
+          console.error("Failed to initialize speech recognition:", error);
+          networkStatus.textContent = "Error";
+          networkStatus.className = "network-status offline";
+          updateStatus("Error: Speech recognition not supported", true);
+        }
+      }
+
+      function updateStatus(message, isError = false) {
+        status.textContent = message;
+        status.style.color = isError ? "#f44336" : "#666";
+      }
+
+      function startRecording() {
+        if (!recognition) return;
+
+        try {
+          recognition.start();
+          isRecording = true;
+          recordButton.textContent = "Berhenti Rekam";
+          recordButton.classList.add("recording");
+          updateStatus("Merekam...");
+          output.textContent = "";
+        } catch (error) {
+          console.error("Failed to start recording:", error);
+          updateStatus("Error: " + error.message, true);
+        }
+      }
+
+      function stopRecording() {
+        if (!recognition) return;
+
+        try {
+          recognition.stop();
+          isRecording = false;
+          recordButton.textContent = "Mulai Rekam";
+          recordButton.classList.remove("recording");
+          updateStatus("Rekaman berhenti");
+        } catch (error) {
+          console.error("Failed to stop recording:", error);
+        }
+      }
+
+      recordButton.addEventListener("click", () => {
+        if (isRecording) {
+          stopRecording();
+        } else {
+          startRecording();
+        }
+      });
+
+      // Initialize on page load
+      initializeSpeechRecognition();
+
+      console.log("[App] Renderer initialization complete");
+    </script>
+  </body>
+</html>
