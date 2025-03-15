@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Sistem Antrian - Scan KTP</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/assets/nexaui.min.css" />
+    <script src="https://code.responsivevoice.org/responsivevoice.js?key=16D1IGr5"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/annyang/2.6.1/annyang.min.js"></script>
+    <style>
+        body {
+            overflow: hidden;
+        }
+        .mx-auto {
+            margin: 0 auto;
+        } 
+        .d-flex {
+            display: flex;
+        }  
+        .justify-content-center {
+            justify-content: center;
+        }
+        .align-items-center {
+            align-items: center;
+        }
+        .flex-column {
+            flex-direction: column;
+        }
+        .nx-card {
+    border: 0px solid #ccc;
+    border-radius: 60px;
+    padding: 40px;
+    background-color: #ffffff99;
+    backdrop-filter: blur(6px);
+    box-shadow: 0px 10px 14px 3px rgb(0 0 0 / 14%);
+}
+        .section {
+    display: flex;
+    align-items: center;
+    height: 100vh;
+    background-image: linear-gradient(to right, #0083b09e, #00b4dbb0), url(/assets/brand/bg4.jpg), url(/assets/brand/bg4.jpg);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+.title {
+    margin-top: 10px;
+    font-size: 31px;
+    font-weight: 600;
+    color: #000;
+}
+        .title span {
+            font-size: 1rem;
+            font-weight: 400;
+            color: #000;
+        }
+        .logo {
+            width: 100px;
+            height: 100px;
+        }
+        .qr {
+            width: 100px;
+            height: 100px;
+        }
+        .content {
+            margin-top: 10px;
+            padding: 30px;
+        }
+        .slider {
+    width: 315px;
+    height: 625px;
+    position: relative;
+    overflow: hidden;
+    border-radius: 10px;
+    /* box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); */
+}
+        .slider-container {
+            display: flex;
+            transition: transform 0.5s ease-in-out;
+            height: 100%;
+        }
+        .slider-item {
+            min-width: 100%;
+            height: 100%;
+        }
+        .slider-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .slider-nav {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 5px;
+        }
+        .slider-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.5);
+            cursor: pointer;
+        }
+        .slider-dot.active {
+            background: white;
+        }
+        .slider-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.5);
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+        }
+        .slider-btn:hover {
+            background: rgba(255,255,255,0.8);
+        }
+        .slider-btn.prev {
+            left: 10px;
+        }
+        .slider-btn.next {
+            right: 10px;
+        }
+        .desk {
+            margin: 10px 30px;
+            font-size: 1rem;
+            font-weight: 400;
+            color: #000;
+        }
+        .zoom-75 {
+            zoom: 75%;
+        }
+    </style>
+  </head>
+  <body>
+    <section class="section">
+        <div class="container zoom-75">
+            <div class="nx-row ">
+                <div class="nx-col-8 mx-auto">
+                    <div class="nx-card">
+                    <div class="nx-row">
+                    <div class="nx-col-3">
+                        <div class="slider">
+                            <div class="slider-container">
+                                <div class="slider-item">
+                                    <img src="/assets/brand/rs1.png" alt="logo" class="logo">
+                                </div>
+                                <div class="slider-item">
+                                    <img src="/assets/brand/rs4.png" alt="logo" class="logo">
+                                </div>
+                                <div class="slider-item">
+                                    <img src="/assets/brand/rs2.png" alt="logo" class="logo">
+                                </div>
+                                <div class="slider-item">
+                                    <img src="/assets/brand/rs3.png" alt="logo" class="logo">
+                                </div>
+                            </div>
+                            <button class="slider-btn prev">&#10094;</button>
+                            <button class="slider-btn next">&#10095;</button>
+                            <div class="slider-nav"></div>
+                        </div>
+                    </div>
+                    <div class="nx-col-9">
+                        <div class="content">
+                            <div class="d-flex justify-content-center align-items-center flex-column">
+                                <div class="d-flex justify-content-center align-items-center flex-column">
+                                    <img src="/assets/brand/nexaui.png" alt="logo" class="logo">
+                                    <h5 class="title">SIAP- RSBP <span>mobile</span></h5>
+                                    <h3>Sistem Informasi dan Aplikasi Pelayanan Rumah Sakit Bumi Panua</h3>
+                                </div>
+                                <div class="desk">
+                                    <p>Tidak perlu lagi antri panjang! Dengan <b>SIAP-RSBP Mobile</b> , daftar antrian poliklinik di <b>Rumah Sakit Bumi Panua</b> kini semudah dalam genggaman. Hemat waktu, praktis, dan efisien - Atur jadwal kunjungan Anda kapan saja, di mana saja!</p>   
+                                </div>
+                                <div class="">
+                                    <p>Scan QR Code dibawah ini untuk mengunduh aplikasi SIAP-RSBP Mobile</p>
+                                    <img src="/assets/brand/qr.png" alt="logo" class="logo">
+                                </div>
+                        </div>
+                        </div>
+
+                </div>
+                </div>
+            </div>
+            </div>
+        </div>
+    </section>
+    <script>
+        class Slider {
+            constructor(element) {
+                this.slider = element;
+                this.container = element.querySelector('.slider-container');
+                this.slides = element.querySelectorAll('.slider-item');
+                this.prevBtn = element.querySelector('.prev');
+                this.nextBtn = element.querySelector('.next');
+                this.nav = element.querySelector('.slider-nav');
+                
+                this.currentSlide = 0;
+                this.slideCount = this.slides.length;
+                this.isTransitioning = false;
+                this.autoplayInterval = null;
+                
+                this.init();
+            }
+            
+            init() {
+                // Buat dots navigasi
+                this.slides.forEach((_, index) => {
+                    const dot = document.createElement('div');
+                    dot.classList.add('slider-dot');
+                    dot.addEventListener('click', () => this.goToSlide(index));
+                    this.nav.appendChild(dot);
+                });
+                
+                // Event listeners
+                this.prevBtn.addEventListener('click', () => this.prevSlide());
+                this.nextBtn.addEventListener('click', () => this.nextSlide());
+                
+                // Touch events untuk mobile
+                let touchStartX = 0;
+                let touchEndX = 0;
+                
+                this.slider.addEventListener('touchstart', e => {
+                    touchStartX = e.changedTouches[0].screenX;
+                });
+                
+                this.slider.addEventListener('touchend', e => {
+                    touchEndX = e.changedTouches[0].screenX;
+                    if (touchStartX - touchEndX > 50) {
+                        this.nextSlide();
+                    } else if (touchEndX - touchStartX > 50) {
+                        this.prevSlide();
+                    }
+                });
+                
+                // Start autoplay
+                this.startAutoplay();
+                this.updateDots();
+                
+                // Pause autoplay on hover
+                this.slider.addEventListener('mouseenter', () => this.stopAutoplay());
+                this.slider.addEventListener('mouseleave', () => this.startAutoplay());
+            }
+            
+            goToSlide(index) {
+                if (this.isTransitioning) return;
+                this.isTransitioning = true;
+                this.currentSlide = index;
+                this.container.style.transform = `translateX(-${this.currentSlide * 100}%)`;
+                this.updateDots();
+                setTimeout(() => {
+                    this.isTransitioning = false;
+                }, 500);
+            }
+            
+            nextSlide() {
+                this.goToSlide((this.currentSlide + 1) % this.slideCount);
+            }
+            
+            prevSlide() {
+                this.goToSlide((this.currentSlide - 1 + this.slideCount) % this.slideCount);
+            }
+            
+            updateDots() {
+                const dots = this.nav.querySelectorAll('.slider-dot');
+                dots.forEach((dot, index) => {
+                    dot.classList.toggle('active', index === this.currentSlide);
+                });
+            }
+            
+            startAutoplay() {
+                if (this.autoplayInterval) return;
+                this.autoplayInterval = setInterval(() => this.nextSlide(), 3000);
+            }
+            
+            stopAutoplay() {
+                if (!this.autoplayInterval) return;
+                clearInterval(this.autoplayInterval);
+                this.autoplayInterval = null;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const sliderElement = document.querySelector('.slider');
+            new Slider(sliderElement);
+        });
+    </script>
+  </body>
+</html>
