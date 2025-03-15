@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Sistem Antrian - Scan KTP</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/assets/nexaui.min.css" />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <script src="https://code.responsivevoice.org/responsivevoice.js?key=16D1IGr5"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+      :root {
+        --primary-color: #00b294;
+        --primary-dark: #009882;
+        --secondary-color: #475569;
+        --text-primary: #1e293b;
+        --text-secondary: #64748b;
+        --border-color: #e2e8f0;
+        --background-light: #f8fafc;
+        --card-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+      }
+
+      body {
+        background-image: linear-gradient(
+            rgba(255, 255, 255, 0.9),
+            rgba(255, 255, 255, 0.8)
+          ),
+          url(/assets/brand/bg4.jpg);
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        min-height: 100vh;
+        margin: 0;
+        padding: 1rem;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+      }
+
+      .page-header {
+        background: rgba(255, 255, 255, 0.95);
+        padding: 1rem 2rem;
+        border-radius: 1rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--card-shadow);
+      }
+
+      .page-header h1 {
+        color: var(--primary-color);
+        margin: 0;
+        font-size: 1.75rem;
+        font-weight: 600;
+      }
+
+      .page-header h4 {
+        color: var(--text-secondary);
+        margin: 0.5rem 0 0;
+        font-weight: 400;
+      }
+
+      .banner {
+        background: linear-gradient(
+          135deg,
+          var(--primary-color),
+          var(--primary-dark)
+        );
+        border-radius: 1rem;
+        padding: 2rem;
+        color: white;
+        text-align: center;
+        font-size: 1.25rem;
+        box-shadow: var(--card-shadow);
+      }
+
+      .main-content {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-top: 2rem;
+      }
+
+      .camera-container {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: var(--card-shadow);
+      }
+
+      #reader {
+        width: 100% !important;
+        border-radius: 0.75rem;
+        overflow: hidden;
+        background: #000;
+      }
+
+      #reader video {
+        width: 100% !important;
+        border-radius: 0.75rem;
+      }
+
+      .button-container {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1rem;
+      }
+
+      .button {
+        flex: 1;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        border: none;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+      }
+
+      .button-primary {
+        background: var(--primary-color);
+        color: white;
+      }
+
+      .button-secondary {
+        background: var(--secondary-color);
+        color: white;
+      }
+
+      .button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      .scan-result {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        margin-top: 1.5rem;
+        box-shadow: var(--card-shadow);
+      }
+
+      .scan-result h3 {
+        color: var(--text-primary);
+        margin: 0 0 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid var(--border-color);
+      }
+
+      .raw-data {
+        background: var(--text-primary);
+        color: white;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        font-family: monospace;
+        margin: 1rem 0;
+      }
+
+      .verification-status {
+        padding: 1rem;
+        border-radius: 0.5rem;
+        text-align: center;
+        font-weight: 500;
+        margin-top: 1rem;
+      }
+
+      .verification-success {
+        background: #dcfce7;
+        color: #166534;
+      }
+
+      .verification-error {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+
+      .verification-pending {
+        background: #fef3c7;
+        color: #92400e;
+      }
+
+      .poli-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1rem;
+        padding: 1rem;
+      }
+
+      .poli-button {
+        background: white;
+        border: 1px solid var(--border-color);
+        padding: 1rem;
+        border-radius: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .poli-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      .poli-button.selected {
+        background: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+      }
+
+      .poli-button .material-icons {
+        font-size: 1.5rem;
+      }
+
+      .poli-button.selected .material-icons {
+        color: white;
+      }
+
+      @media (max-width: 768px) {
+        .main-content {
+          grid-template-columns: 1fr;
+        }
+
+        .poli-grid {
+          grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-header">
+      <div class="nx-row">
+        <div class="nx-col-8">
+          <h1>SIMRSBP - Sistem Antrian</h1>
+          <h4>Silahkan arahkan QR Code ke kamera untuk verifikasi antrian</h4>
+        </div>
+        <div class="nx-col-4">
+          <div class="banner">
+            <span class="material-icons" style="font-size: 3rem"
+              >qr_code_scanner</span
+            >
+            <div>Scan QR Code</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="main-content">
+      <div class="scanner-section">
+        <div class="camera-container">
+          <div id="reader"></div>
+          <div class="button-container">
+            <button id="start-scan" class="button button-primary">
+              <span class="material-icons">camera</span>
+              Mulai Scan
+            </button>
+            <button
+              id="stop-scan"
+              class="button button-secondary"
+              style="display: none"
+            >
+              <span class="material-icons">stop</span>
+              Berhenti
+            </button>
+          </div>
+        </div>
+
+        <div id="raw-result" class="scan-result" style="display: none">
+          <h3>Data QR Code</h3>
+          <div class="raw-data" id="qr-raw-data"></div>
+          <div id="verification-status" class="verification-status"></div>
+        </div>
+
+        <div class="scan-result">
+          <h3>Data Pasien</h3>
+          <div class="field-group">
+            <span class="field-label">NIK</span>
+            <span id="nik" class="field-value">-</span>
+          </div>
+          <div class="field-group">
+            <span class="field-label">Nama Lengkap</span>
+            <span id="nama" class="field-value">-</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="queue-section">
+        <div class="camera-container">
+          <h3>Pilih Poli</h3>
+          <div class="poli-grid">
+            <button class="poli-button" data-poli="penyakit-dalam">
+              <span class="material-icons">medication</span>
+              <span>Penyakit Dalam</span>
+            </button>
+            <button class="poli-button" data-poli="bedah">
+              <span class="material-icons">medical_services</span>
+              <span>Bedah</span>
+            </button>
+            <button class="poli-button" data-poli="saraf">
+              <span class="material-icons">psychology</span>
+              <span>Saraf</span>
+            </button>
+            <button class="poli-button" data-poli="gigi">
+              <span class="material-icons">cleaning_services</span>
+              <span>Gigi</span>
+            </button>
+            <button class="poli-button" data-poli="kulit-kelamin">
+              <span class="material-icons">face</span>
+              <span>Kulit & Kelamin</span>
+            </button>
+            <button class="poli-button" data-poli="anak">
+              <span class="material-icons">child_care</span>
+              <span>Anak</span>
+            </button>
+            <button class="poli-button" data-poli="obgyn">
+              <span class="material-icons">pregnant_woman</span>
+              <span>Obgyn</span>
+            </button>
+            <button class="poli-button" data-poli="paru">
+              <span class="material-icons">air</span>
+              <span>Paru</span>
+            </button>
+          </div>
+
+          <div class="button-container" style="margin-top: 2rem">
+            <button id="get-queue" class="button button-primary" disabled>
+              <span class="material-icons">confirmation_number</span>
+              Ambil Nomor
+            </button>
+            <button
+              id="cancel-selection"
+              class="button button-secondary"
+              disabled
+            >
+              <span class="material-icons">close</span>
+              Batal
+            </button>
+          </div>
+
+          <button
+            onclick="window.location.href='index.html'"
+            class="button button-secondary"
+            style="width: 100%; margin-top: 1rem"
+          >
+            <span class="material-icons">home</span>
+            Kembali ke Beranda
+          </button>
+        </div>
+
+        <div id="queueResult" class="scan-result" style="display: none">
+          <h3>Nomor Antrian Anda</h3>
+          <div class="ticket-info">
+            <h2
+              id="queueNumber"
+              style="
+                font-size: 2rem;
+                color: var(--primary-color);
+                text-align: center;
+              "
+            ></h2>
+            <p id="patientName" style="text-align: center"></p>
+            <p id="poliInfo" style="text-align: center"></p>
+            <p id="visitDate" style="text-align: center"></p>
+            <img
+              id="qrCode"
+              style="display: block; margin: 1rem auto; max-width: 200px"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const { ipcRenderer } = require("electron");
+      let html5QrcodeScanner = null;
+
+      function startScanner() {
+        const html5QrCode = new Html5Qrcode("reader");
+        const config = {
+          fps: 10,
+          qrbox: { width: 250, height: 250 },
+          aspectRatio: 1.0,
+          formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
+          experimentalFeatures: {
+            useBarCodeDetectorIfSupported: true,
+          },
+          rememberLastUsedCamera: true,
+          showTorchButtonIfSupported: true,
+        };
+
+        Html5Qrcode.getCameras().then((devices) => {
+          if (devices && devices.length) {
+            html5QrCode
+              .start(
+                { facingMode: "environment" },
+                config,
+                (decodedText, decodedResult) => {
+                  handleQRCodeSuccess(decodedText);
+                  document.getElementById("stop-scan").style.display =
+                    "inline-block";
+                  document.getElementById("start-scan").style.display = "none";
+                },
+                (errorMessage) => {
+                  if (!errorMessage.includes("No MultiFormat Readers")) {
+                    console.log("Scanning:", errorMessage);
+                  }
+                }
+              )
+              .catch((err) => {
+                console.error("Error starting scanner:", err);
+              });
+
+            html5QrcodeScanner = html5QrCode;
+          }
+        });
+      }
+
+      function handleQRCodeSuccess(decodedText) {
+        try {
+          console.log("Raw QR Code data:", decodedText);
+
+          const rawResultDiv = document.getElementById("raw-result");
+          const rawDataDiv = document.getElementById("qr-raw-data");
+          const verificationStatus = document.getElementById(
+            "verification-status"
+          );
+
+          rawResultDiv.style.display = "block";
+          rawDataDiv.textContent = decodedText;
+
+          let qrData;
+          try {
+            qrData = JSON.parse(decodedText);
+          } catch (parseError) {
+            if (/^\d+$/.test(decodedText)) {
+              const today = new Date().toISOString().split("T")[0];
+              qrData = {
+                nomor_antrian: decodedText,
+                tanggal: today,
+                poli: "UMUM",
+                nama: "PASIEN-" + decodedText.substring(0, 5),
+                nik: decodedText,
+              };
+              rawDataDiv.textContent = JSON.stringify(qrData, null, 2);
+            } else {
+              throw new Error(
+                "Format QR Code tidak valid (harus JSON atau nomor antrian)"
+              );
+            }
+          }
+
+          // Update UI with scanned data
+          document.getElementById("nik").textContent =
+            qrData.nik || qrData.nomor_bpjs || "-";
+          document.getElementById("nama").textContent = qrData.nama || "-";
+
+          verificationStatus.className =
+            "verification-status verification-pending";
+          verificationStatus.textContent = "Memverifikasi QR Code...";
+
+          // Send to main process for verification
+          ipcRenderer.send("verify-qrcode", qrData);
+        } catch (error) {
+          console.error("Error handling QR code:", error);
+          const verificationStatus = document.getElementById(
+            "verification-status"
+          );
+          verificationStatus.className =
+            "verification-status verification-error";
+          verificationStatus.textContent = error.message;
+        }
+      }
+
+      // Handle verification result from main process
+      ipcRenderer.on("qrcode-verification-result", (event, result) => {
+        const verificationStatus = document.getElementById(
+          "verification-status"
+        );
+
+        if (result.success) {
+          verificationStatus.className =
+            "verification-status verification-success";
+          verificationStatus.textContent = `✓ ${
+            result.message || "Verifikasi berhasil"
+          }`;
+        } else {
+          verificationStatus.className =
+            "verification-status verification-error";
+          verificationStatus.textContent = `✗ ${
+            result.error || "Verifikasi gagal"
+          }`;
+        }
+      });
+
+      // Event Listeners for Poli Selection
+      const poliButtons = document.querySelectorAll(".poli-button");
+      let selectedPoli = null;
+
+      poliButtons.forEach((button) => {
+        button.addEventListener("click", function () {
+          // Remove selected class from all buttons
+          poliButtons.forEach((btn) => btn.classList.remove("selected"));
+
+          // Add selected class to clicked button
+          this.classList.add("selected");
+
+          // Store selected poli
+          selectedPoli = this.dataset.poli;
+
+          // Enable get-queue and cancel buttons
+          document.getElementById("get-queue").disabled = false;
+          document.getElementById("cancel-selection").disabled = false;
+        });
+      });
+
+      // Cancel Selection Button
+      document
+        .getElementById("cancel-selection")
+        .addEventListener("click", function () {
+          // Remove selected class from all buttons
+          poliButtons.forEach((btn) => btn.classList.remove("selected"));
+
+          // Reset selected poli
+          selectedPoli = null;
+
+          // Disable buttons
+          this.disabled = true;
+          document.getElementById("get-queue").disabled = true;
+        });
+
+      // Get Queue Button
+      document
+        .getElementById("get-queue")
+        .addEventListener("click", function () {
+          if (selectedPoli) {
+            const qrData = {
+              poli: selectedPoli,
+              timestamp: new Date().toISOString(),
+            };
+
+            // Show queue result
+            document.getElementById("queueResult").style.display = "block";
+
+            // Update queue information
+            document.getElementById("queueNumber").textContent = "A-001"; // Example number
+            document.getElementById(
+              "poliInfo"
+            ).textContent = `Poli: ${selectedPoli.toUpperCase()}`;
+            document.getElementById("visitDate").textContent =
+              new Date().toLocaleDateString("id-ID", {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              });
+          }
+        });
+
+      document
+        .getElementById("start-scan")
+        .addEventListener("click", function () {
+          startScanner();
+          this.style.display = "none";
+          document.getElementById("stop-scan").style.display = "inline-block";
+        });
+
+      document
+        .getElementById("stop-scan")
+        .addEventListener("click", function () {
+          if (html5QrcodeScanner) {
+            html5QrcodeScanner.stop().then(() => {
+              document.getElementById("start-scan").style.display =
+                "inline-block";
+              this.style.display = "none";
+            });
+          }
+        });
+    </script>
+  </body>
+</html>
